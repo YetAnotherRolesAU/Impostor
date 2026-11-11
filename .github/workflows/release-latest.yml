@@ -37,6 +37,7 @@ jobs:
             -p:PublishSingleFile=true \
             -p:PublishTrimmed=false \
             -p:VersionSuffix=ci.${{ github.run_number }} \
+            -p:SourceRevisionId=${{ github.sha }} \
             -o ./publish
 
       - name: Package

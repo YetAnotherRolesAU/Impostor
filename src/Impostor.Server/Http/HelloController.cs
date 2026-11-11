@@ -1,3 +1,4 @@
+using Impostor.Server.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -31,6 +32,7 @@ public sealed class HelloController : ControllerBase
             Impostor is running, please configure your Among Us to connect to a game
             To generate a region file, go to https://impostor.github.io/Impostor
             """
+            + "\nVersion: " + DotnetUtils.Version
         );
     }
 }
