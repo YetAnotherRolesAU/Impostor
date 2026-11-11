@@ -16,6 +16,7 @@
 | Key            | Default | Description                                                                                                                                                                                         |
 | -------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **EnableDtls** | `false` | Also listen for DTLS handshakes on `ListenPort + 2` (UDP) using a generated self-signed certificate, so clients that try DTLS first are answered instead of timing out. Requires opening that UDP port. |
+| **DtlsWireVersion** | `0` | Protocol version value written in DTLS records and handshake messages sent to clients. Among Us clients send `0`; `65277` is the standard DTLS 1.2 value (0xFEFD). Only used when `EnableDtls` is set. |
 
 ### HttpServer
 

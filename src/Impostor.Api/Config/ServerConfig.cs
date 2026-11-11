@@ -19,6 +19,8 @@ namespace Impostor.Api.Config
 
         public bool EnableDtls { get; set; } = false;
 
+        public ushort DtlsWireVersion { get; set; } = 0;
+
         public string ResolvePublicIp()
         {
             return _resolvedPublicIp ??= IpUtils.ResolveIp(PublicIp);

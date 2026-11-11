@@ -61,8 +61,6 @@ namespace Impostor.Server.Net
 
             if (dtlsEndPoint != null)
             {
-                DtlsWireVersion.Value = 0;
-
                 _dtlsConnection = new DtlsConnectionListener(dtlsEndPoint, _readerPool, mode)
                 {
                     NewConnection = OnNewConnection,

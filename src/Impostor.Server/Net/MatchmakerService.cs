@@ -36,6 +36,11 @@ namespace Impostor.Server.Net
                 ? new IPEndPoint(endpoint.Address, _serverConfig.ListenPort + 2)
                 : null;
 
+            if (dtlsEndpoint != null)
+            {
+                Impostor.Hazel.Dtls.DtlsWireVersion.Value = _serverConfig.DtlsWireVersion;
+            }
+
             await _matchmaker.StartAsync(endpoint, dtlsEndpoint);
 
             _logger.LogInformation(
