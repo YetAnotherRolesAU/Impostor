@@ -18,7 +18,7 @@ namespace Impostor.Api.Innersloth.GameFilters
         }
 
         [JsonIgnore]
-        public ISubFilter SubFilter { get; set; }
+        public ISubFilter? SubFilter { get; set; }
 
         [JsonPropertyName("OptionType")]
         public required string OptionType { get; set; }
@@ -46,7 +46,7 @@ namespace Impostor.Api.Innersloth.GameFilters
             this.SubFilter = this.ResolveSubFilter(this.OptionType, this.SubFilterString);
         }
 
-        private ISubFilter ResolveSubFilter(string type, string filterString)
+        private ISubFilter? ResolveSubFilter(string type, string filterString)
         {
             if (type != null)
             {
@@ -74,6 +74,12 @@ namespace Impostor.Api.Innersloth.GameFilters
                         return JsonSerializer.Deserialize<BoolGameFilter>(filterString)
                                ?? throw new InvalidOperationException("Deserialization returned null for BoolGameFilter");
                     case "mod":
+                        // The client sends "null" when no specific mod is requested, which means there is nothing to filter on.
+                        if (string.IsNullOrWhiteSpace(filterString) || filterString == "null")
+                        {
+                            return null;
+                        }
+
                         return JsonSerializer.Deserialize<ModFilter>(filterString)
                                ?? throw new InvalidOperationException("Deserialization returned null for ModFilter");
                     default:
