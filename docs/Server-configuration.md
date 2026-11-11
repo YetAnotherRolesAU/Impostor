@@ -11,13 +11,6 @@
 | **ListenIp**   | `0.0.0.0`   | The network interface to listen on. If you do not know what to put here, use `0.0.0.0`. Since 1.2.2 it is also possible to use hostnames instead of IPv4 addresses, these must resolve to a valid IPv4 address.                                                                                                                                                                                        |
 | **ListenPort** | `22023`     | The listen port of the server, usually `22023`. For port forwarding purposes: this is an UDP port                                                                                                                                                                                                                                                                                                                                                       |
 
-### Optional Server Configuration
-
-| Key            | Default | Description                                                                                                                                                                                         |
-| -------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **EnableDtls** | `false` | Also listen for DTLS handshakes on `ListenPort + 2` (UDP) using a generated self-signed certificate, so clients that try DTLS first are answered instead of timing out. Requires opening that UDP port. |
-| **DtlsWireVersion** | `0` | Protocol version value written in DTLS records and handshake messages sent to clients. Among Us clients send `0`; `65277` is the standard DTLS 1.2 value (0xFEFD). Only used when `EnableDtls` is set. |
-
 ### HttpServer
 
 Impostor has an Http Server that is used by recent versions of Among Us to connect to. See [the Http Server page](Http-server.md) for more details on how to set this up.

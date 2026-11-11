@@ -32,16 +32,7 @@ namespace Impostor.Server.Net
         {
             var endpoint = new IPEndPoint(IPAddress.Parse(_serverConfig.ResolveListenIp()), _serverConfig.ListenPort);
 
-            var dtlsEndpoint = _serverConfig.EnableDtls
-                ? new IPEndPoint(endpoint.Address, _serverConfig.ListenPort + 2)
-                : null;
-
-            if (dtlsEndpoint != null)
-            {
-                Impostor.Hazel.Dtls.DtlsWireVersion.Value = _serverConfig.DtlsWireVersion;
-            }
-
-            await _matchmaker.StartAsync(endpoint, dtlsEndpoint);
+            await _matchmaker.StartAsync(endpoint);
 
             _logger.LogInformation(
                 "Matchmaker is listening on {0}:{1}, the public server ip is {2}:{3}.",
@@ -49,11 +40,6 @@ namespace Impostor.Server.Net
                 endpoint.Port,
                 _serverConfig.ResolvePublicIp(),
                 _serverConfig.PublicPort);
-
-            if (dtlsEndpoint != null)
-            {
-                _logger.LogInformation("DTLS is listening on {0}:{1}.", dtlsEndpoint.Address, dtlsEndpoint.Port);
-            }
 
             var runningOutsideContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == null;
             if (_serverConfig.PublicIp == "127.0.0.1")
