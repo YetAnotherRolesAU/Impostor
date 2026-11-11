@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Impostor.Api.Config;
 using Impostor.Api.Events.Managers;
 using Impostor.Api.Net.Messages.C2S;
 using Impostor.Hazel;
+using Impostor.Hazel.Dtls;
 using Impostor.Hazel.Udp;
 using Impostor.Server.Events.Client;
 using Impostor.Server.Net.Hazel;
@@ -24,6 +27,7 @@ namespace Impostor.Server.Net
         private readonly ILogger<HazelConnection> _connectionLogger;
         private readonly IOptions<AntiCheatConfig> _antiCheatOptions;
         private UdpConnectionListener? _connection;
+        private DtlsConnectionListener? _dtlsConnection;
 
         public Matchmaker(
             IEventManager eventManager,
@@ -39,7 +43,7 @@ namespace Impostor.Server.Net
             _antiCheatOptions = antiCheatOptions;
         }
 
-        public async ValueTask StartAsync(IPEndPoint ipEndPoint)
+        public async ValueTask StartAsync(IPEndPoint ipEndPoint, IPEndPoint? dtlsEndPoint = null)
         {
             var mode = ipEndPoint.AddressFamily switch
             {
@@ -54,14 +58,39 @@ namespace Impostor.Server.Net
             };
 
             await _connection.StartAsync();
+
+            if (dtlsEndPoint != null)
+            {
+                _dtlsConnection = new DtlsConnectionListener(dtlsEndPoint, _readerPool, mode)
+                {
+                    NewConnection = OnNewConnection,
+                };
+
+                _dtlsConnection.SetCertificate(CreateSelfSignedCertificate());
+
+                await _dtlsConnection.StartAsync();
+            }
         }
 
         public async ValueTask StopAsync()
         {
+            if (_dtlsConnection != null)
+            {
+                await _dtlsConnection.DisposeAsync();
+            }
+
             if (_connection != null)
             {
                 await _connection.DisposeAsync();
             }
+        }
+
+        private static X509Certificate2 CreateSelfSignedCertificate()
+        {
+            using var rsa = RSA.Create(2048);
+            var request = new CertificateRequest("CN=Impostor", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(10));
+            return new X509Certificate2(certificate.Export(X509ContentType.Pfx));
         }
 
         private async ValueTask OnNewConnection(NewConnectionEventArgs e)

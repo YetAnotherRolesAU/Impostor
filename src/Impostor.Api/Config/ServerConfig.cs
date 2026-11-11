@@ -17,6 +17,8 @@ namespace Impostor.Api.Config
 
         public ushort ListenPort { get; set; } = 22023;
 
+        public bool EnableDtls { get; set; } = false;
+
         public string ResolvePublicIp()
         {
             return _resolvedPublicIp ??= IpUtils.ResolveIp(PublicIp);
