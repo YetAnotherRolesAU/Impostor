@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -28,6 +29,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Serilog;
 using Serilog.Events;
@@ -210,6 +212,36 @@ namespace Impostor.Server
 
                     builder.Configure(app =>
                     {
+                        // Temporary diagnostics: log when each HTTP request arrives and how long it takes to handle.
+                        var requestLogger = app.ApplicationServices.GetRequiredService<ILoggerFactory>().CreateLogger("Impostor.Server.Http.RequestTiming");
+                        app.Use(async (context, next) =>
+                        {
+                            var stopwatch = Stopwatch.StartNew();
+                            requestLogger.LogInformation(
+                                "HTTP {Method} {Path} from {RemoteIp} arrived at {Arrived:HH:mm:ss.fff} UTC (Protocol={Protocol}, ContentLength={ContentLength}, Expect={Expect})",
+                                context.Request.Method,
+                                context.Request.Path,
+                                context.Connection.RemoteIpAddress,
+                                DateTime.UtcNow,
+                                context.Request.Protocol,
+                                context.Request.ContentLength,
+                                context.Request.Headers["Expect"].ToString());
+
+                            try
+                            {
+                                await next();
+                            }
+                            finally
+                            {
+                                requestLogger.LogInformation(
+                                    "HTTP {Method} {Path} -> {Status} handled in {Elapsed}ms",
+                                    context.Request.Method,
+                                    context.Request.Path,
+                                    context.Response.StatusCode,
+                                    stopwatch.ElapsedMilliseconds);
+                            }
+                        });
+
                         var pluginLoaderService = app.ApplicationServices.GetRequiredService<PluginLoaderService>();
                         foreach (var pluginInformation in pluginLoaderService.Plugins)
                         {
