@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    tags-ignore:
+      - latest
     paths:
       - '.github/workflows/ci.yml'
       - 'src/**/**'
